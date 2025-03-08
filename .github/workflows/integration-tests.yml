@@ -1,0 +1,76 @@
+name: Run Integration Tests & PII Detection
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Ensures pii_detector is fully checked out
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Build and Run Integration Tests
+        run: mvn clean test -Dtest=LoggingServiceIntegrationTest
+
+      - name: Upload Logs (For PII Detection Later)
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: logstest/application-direct-log.txt
+
+  pii-detection:
+    runs-on: ubuntu-latest
+    needs: integration-test
+
+    steps:
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Ensures pii_detector is pulled
+
+      - name: Download Logs from Integration Tests
+        uses: actions/download-artifact@v4
+        with:
+          name: test-logs
+          path: logstest/
+
+      - name: Set Up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+
+      - name: Install Dependencies for PII Detector
+        run: |
+          cd pii_detector
+          poetry install --no-root  # Prevents Poetry from expecting a README.md
+
+      - name: Run PII Detection
+        run: |
+          cd pii_detector
+          poetry run python scripts/pii_check.py
+
+      - name: Fail Build if PII Detected
+        run: |
+          if grep -q "Caution: PII detected" logstest/pii_detection_result.txt; then
+            echo "PII detected! Failing build..."
+            exit 1
+          fi
