@@ -60,12 +60,12 @@ jobs:
 
       - name: Install Dependencies for PII Detector
         run: |
-          cd pii_detector
+          cd i3-anonymate
           poetry install --no-root  # Prevents Poetry from expecting a README.md
 
       - name: Run PII Detection
         run: |
-          cd pii_detector
+          cd i3-anonymate
           poetry run python scripts/pii_check.py
 
       - name: Fail Build if PII Detected
