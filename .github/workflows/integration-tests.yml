@@ -65,7 +65,6 @@ jobs:
 
       - name: Run PII Detection
         run: |
-          cd i3-anonymate
           poetry run python scripts/pii_check.py
 
       - name: Fail Build if PII Detected
