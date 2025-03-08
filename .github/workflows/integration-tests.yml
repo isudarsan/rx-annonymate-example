@@ -38,11 +38,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download Logs from Integration Tests
-        uses: actions/download-artifact@v4
-        with:
-          name: test-logs
-          path: logstest/
+      - name: Clone i3-anonymate from GitHub
+        run: |
+          rm -rf i3-anonymate  # Ensure no previous version exists
+          git clone https://github.com/isudarsan/i3-anonymate.git i3-anonymate
+
+      - name: Debug Directory Structure
+        run: |
+          ls -la
+          ls -la i3-anonymate
 
       - name: Set Up Python 3.11
         uses: actions/setup-python@v4
@@ -56,10 +60,9 @@ jobs:
 
       - name: Install Dependencies for PII Detector
         run: |
-          cd i3-anonymate
-          poetry env use python3.11  # Ensure Poetry uses correct Python version
-          poetry install  # Install dependencies
-          poetry run pip install -e .  # Ensure src/text_anonymizer is installed
+          cd i3-anonymate || exit 1
+          ls -la  # Debug check
+          poetry install --no-root
 
       - name: Run PII Detection
         run: |
