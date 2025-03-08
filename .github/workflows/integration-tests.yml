@@ -11,10 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository with Submodules
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive  # Ensures pii_detector is fully checked out
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v4
@@ -37,10 +35,8 @@ jobs:
     needs: integration-test
 
     steps:
-      - name: Checkout Repository with Submodules
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive  # Ensures pii_detector is pulled
 
       - name: Download Logs from Integration Tests
         uses: actions/download-artifact@v4
@@ -61,7 +57,9 @@ jobs:
       - name: Install Dependencies for PII Detector
         run: |
           cd i3-anonymate
-          poetry install --no-root  # Prevents Poetry from expecting a README.md
+          poetry env use python3.11  # Ensure Poetry uses correct Python version
+          poetry install  # Install dependencies
+          poetry run pip install -e .  # Ensure src/text_anonymizer is installed
 
       - name: Run PII Detection
         run: |
