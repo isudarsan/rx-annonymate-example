@@ -54,7 +54,12 @@ jobs:
       - name: Run PII Detection on Logs
         id: pii_check
         run: |
-          if pii-detector detect logstest/application-direct-log.txt; then
+          echo "🔍 Running PII Detection..."
+          OUTPUT=$(pii-detector detect logstest/application-direct-log.txt) || true  # Avoid exit on error
+          
+          echo "$OUTPUT"
+
+          if echo "$OUTPUT" | grep -q "⚠️ Caution"; then
             echo "❌ PII detected in logs! Pull request will be denied."
             echo "pii_found=true" >> $GITHUB_ENV
             exit 1  # ❌ Fail the workflow, blocking PR merge
