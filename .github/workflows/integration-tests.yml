@@ -27,51 +27,37 @@ jobs:
       - name: Upload Logs (For PII Detection Later)
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs
-          path: logstest/application-direct-log.txt
+          name: test-logs  # 🔹 Artifact name
+          path: logstest/application-direct-log.txt  # 🔹 Path of the log file
 
   pii-detection:
-    runs-on: ubuntu-latest
     needs: integration-test
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Clone i3-anonymate from GitHub
-        run: |
-          rm -rf i3-anonymate  # Ensure no previous version exists
-          git clone https://github.com/isudarsan/i3-anonymate.git i3-anonymate
+      - name: Download Logs from Previous Job
+        uses: actions/download-artifact@v4
+        with:
+          name: test-logs  # 🔹 Match the uploaded artifact name
+          path: logstest/  # 🔹 Extract logs back to `logstest/`
 
-      - name: Debug Directory Structure
-        run: |
-          ls -la
-          ls -la i3-anonymate
-
-      - name: Set Up Python 3.11
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
+      - name: Install PII Detector
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          export PATH="$HOME/.local/bin:$PATH"
+          pip install git+https://github.com/isudarsan/PII_Detector.git  # Update with your actual repo URL
 
-      - name: Install Dependencies for PII Detector
+      - name: Run PII Detection on Logs
         run: |
-          cd i3-anonymate || exit 1
-          ls -la  # Debug check
-          poetry install --no-root
-
-      - name: Run PII Detection
-        run: |
-          cd i3-anonymate
-          poetry run python scripts/pii_check.py
-
-      - name: Fail Build if PII Detected
-        run: |
-          if grep -q "Caution: PII detected" logstest/pii_detection_result.txt; then
-            echo "PII detected! Failing build..."
+          if pii-detector detect logstest/application-direct-log.txt --language en; then
+            echo "✅ No PII found in logs."
+          else
+            echo "❌ PII detected in logs! Failing build."
             exit 1
           fi
