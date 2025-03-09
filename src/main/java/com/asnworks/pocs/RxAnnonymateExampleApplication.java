@@ -61,6 +61,9 @@ class LoggingService {
 					.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
 			Files.write(LOG_FILE_PATH, "Adresse: Musterstraße 2, 70771, Karlsruhe\n".getBytes(StandardCharsets.UTF_8),
 					StandardOpenOption.APPEND);
+			
+			Files.write(LOG_FILE_PATH, "hello: world !!\n".getBytes(StandardCharsets.UTF_8),
+					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
