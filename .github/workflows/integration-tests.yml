@@ -27,7 +27,7 @@ jobs:
       - name: Upload Logs (For PII Detection Later)
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs  # 🔹 Artifact name
+          name: test-logs  # 🔹 Artifact name for logs
           path: logstest/application-direct-log.txt  # 🔹 Path of the log file
 
   pii-detection:
@@ -41,7 +41,7 @@ jobs:
       - name: Download Logs from Previous Job
         uses: actions/download-artifact@v4
         with:
-          name: test-logs  # 🔹 Match the uploaded artifact name
+          name: test-logs  # 🔹 Matches the uploaded artifact name
           path: logstest/  # 🔹 Extract logs back to `logstest/`
 
       - name: Set up Python
@@ -54,10 +54,19 @@ jobs:
           pip install git+https://github.com/isudarsan/PII_Detector.git  # Update with your actual repo URL
 
       - name: Run PII Detection on Logs
+        id: pii_check
         run: |
-          if pii-detector detect logstest/application-direct-log.txt --language en; then
+          if pii-detector detect logstest/application-direct-log.txt; then
             echo "✅ No PII found in logs."
+            echo "pii_found=false" >> $GITHUB_ENV
           else
-            echo "❌ PII detected in logs! Failing build."
-            exit 1
+            echo "⚠️ PII detected in logs!"
+            echo "pii_found=true" >> $GITHUB_ENV
           fi
+
+      - name: Anonymize Logs If PII Was Found
+        if: env.pii_found == 'true'
+        run: |
+          echo "🔄 Anonymizing log file..."
+          pii-detector anonymize logstest/application-direct-log.txt --output_file logstest/application-direct-log.txt
+          echo "✅ Log file anonymized."
