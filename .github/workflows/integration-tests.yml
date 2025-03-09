@@ -59,7 +59,8 @@ jobs:
           
           echo "$OUTPUT"
 
-          if echo "$OUTPUT" | grep -q "⚠️ Caution"; then
+          # Check for ANY occurrence of "⚠️ PII detected" in the output
+          if echo "$OUTPUT" | grep -q "⚠️ PII detected"; then
             echo "❌ PII detected in logs! Pull request will be denied."
             echo "pii_found=true" >> $GITHUB_ENV
             exit 1  # ❌ Fail the workflow, blocking PR merge
