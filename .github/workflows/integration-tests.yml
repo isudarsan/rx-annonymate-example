@@ -51,7 +51,7 @@ jobs:
 
       - name: Install PII Detector
         run: |
-          pip install git+https://github.com/your-username/pii_detector.git  # Update with your actual repo URL
+          pip install git+https://github.com/isudarsan/PII_Detector.git  # Update with your actual repo URL
 
       - name: Run PII Detection on Logs
         id: pii_check
