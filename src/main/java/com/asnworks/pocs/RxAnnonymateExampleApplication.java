@@ -52,17 +52,21 @@ class LoggingService {
 				Files.createFile(LOG_FILE_PATH);
 			}
 
-			Files.write(LOG_FILE_PATH, "User Name: Max Mustermann, Email: max.mustermann@mercedes-benz.com\n"
-					.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
-			Files.write(LOG_FILE_PATH, "Address: Musterstraße 2, 70771, Karlsruhe\n".getBytes(StandardCharsets.UTF_8),
-					StandardOpenOption.APPEND);
-
-			Files.write(LOG_FILE_PATH, "Benutzername: Max Mustermann, E-Mail: max.mustermann@mercedes-benz.com\n"
-					.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
-			Files.write(LOG_FILE_PATH, "Adresse: Musterstraße 2, 70771, Karlsruhe\n".getBytes(StandardCharsets.UTF_8),
-					StandardOpenOption.APPEND);
+//			Files.write(LOG_FILE_PATH, "User Name: Max Mustermann, Email: max.mustermann@mercedes-benz.com\n"
+//					.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+//			Files.write(LOG_FILE_PATH, "Address: Musterstraße 2, 70771, Karlsruhe\n".getBytes(StandardCharsets.UTF_8),
+//					StandardOpenOption.APPEND);
+//
+//			Files.write(LOG_FILE_PATH, "Benutzername: Max Mustermann, E-Mail: max.mustermann@mercedes-benz.com\n"
+//					.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+//			Files.write(LOG_FILE_PATH, "Adresse: Musterstraße 2, 70771, Karlsruhe\n".getBytes(StandardCharsets.UTF_8),
+//					StandardOpenOption.APPEND);
 			
 			Files.write(LOG_FILE_PATH, "hello: world !!\n".getBytes(StandardCharsets.UTF_8),
+					StandardOpenOption.APPEND);
+			
+			
+			Files.write(LOG_FILE_PATH, "Welcome to the world of python !\n".getBytes(StandardCharsets.UTF_8),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			e.printStackTrace();
