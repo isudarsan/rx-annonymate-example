@@ -53,6 +53,7 @@ jobs:
 
       - name: Run PII Detection on Logs
         id: pii_check
+        continue-on-error: true  # ✅ Allow workflow to continue even if PII is found
         run: |
           echo "🔍 Running PII Detection..."
           OUTPUT=$(pii-detector detect logstest/application-direct-log.txt) || true  # Avoid exit on error
@@ -61,9 +62,8 @@ jobs:
 
           # Check for ANY occurrence of "⚠️ PII detected" in the output
           if echo "$OUTPUT" | grep -q "⚠️ PII detected"; then
-            echo "❌ PII detected in logs! Pull request will be denied."
+            echo "❌ PII detected in logs! PR merge will be denied, but workflow will continue."
             echo "pii_found=true" >> $GITHUB_ENV
-            exit 1  # ❌ Fail the workflow, blocking PR merge
           else
             echo "✅ No PII found in logs. PR is valid."
             echo "pii_found=false" >> $GITHUB_ENV
@@ -110,3 +110,9 @@ jobs:
           ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
           echo "### ✅ Download Updated Log File" >> $GITHUB_STEP_SUMMARY
           echo "🔗 [Click here to download the updated log file](${ARTIFACT_URL})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail PR If PII Was Found
+        if: env.pii_found == 'true'
+        run: |
+          echo "❌ PII was detected in the logs! PR will be blocked."
+          exit 1  # ❌ This step fails the workflow, blocking PR merge
