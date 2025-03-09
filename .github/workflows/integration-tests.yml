@@ -27,7 +27,7 @@ jobs:
       - name: Upload Logs (For PII Detection Later)
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs  # 🔹 This will be overwritten later
+          name: test-logs
           path: logstest/application-direct-log.txt
 
   pii-detection:
@@ -41,7 +41,7 @@ jobs:
       - name: Download Logs from Previous Job
         uses: actions/download-artifact@v4
         with:
-          name: test-logs  # 🔹 Extracts the log file from the original artifact
+          name: test-logs
           path: logstest/
 
       - name: Set up Python
@@ -51,7 +51,7 @@ jobs:
 
       - name: Install PII Detector
         run: |
-          pip install git+https://github.com/isudarsan/PII_Detector.git  # ✅ Update with your repo
+          pip install git+https://github.com/isudarsan/PII_Detector.git  # ✅ Updated repo URL
 
       - name: Run PII Detection on Logs
         id: pii_check
@@ -71,15 +71,35 @@ jobs:
           pii-detector anonymize logstest/application-direct-log.txt --output_file logstest/application-direct-log.txt
           echo "✅ Log file anonymized (overwritten)."
 
-      - name: Upload Overwritten Log File as the Original Artifact
+      - name: Delete Existing Artifact Before Uploading
+        if: env.pii_found == 'true'
+        run: |
+          ARTIFACT_NAME="test-logs"
+          echo "🔄 Checking for existing artifact: $ARTIFACT_NAME..."
+          
+          # Authenticate GitHub CLI
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+          # Find the artifact ID
+          ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name==\"$ARTIFACT_NAME\").id")
+
+          if [[ -n "$ARTIFACT_ID" ]]; then
+            echo "🚀 Found existing artifact ID: $ARTIFACT_ID. Deleting..."
+            gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID
+            echo "✅ Artifact deleted successfully."
+          else
+            echo "✅ No existing artifact found. Proceeding with upload."
+          fi
+
+      - name: Upload Updated Log File as `test-logs`
         if: env.pii_found == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs  # ✅ Same name as the original artifact (overwrites)
-          path: logstest/application-direct-log.txt  # ✅ Ensures overwriting
+          name: test-logs  # ✅ Overwrites the artifact
+          path: logstest/application-direct-log.txt  # ✅ Uploads the anonymized log file
 
       - name: Generate Summary with Download Link
         run: |
           ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
-          echo "### ✅ Download Anonymized Log" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Download Updated Log File" >> $GITHUB_STEP_SUMMARY
           echo "🔗 [Click here to download the updated log file](${ARTIFACT_URL})" >> $GITHUB_STEP_SUMMARY
