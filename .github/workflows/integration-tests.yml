@@ -51,7 +51,7 @@ jobs:
 
       - name: Install PII Detector
         run: |
-          pip install git+https://github.com/isudarsan/PII_Detector.git  # Update with your actual repo URL
+          pip install git+https://github.com/your-username/pii_detector.git  # Update with your actual repo URL
 
       - name: Run PII Detection on Logs
         id: pii_check
@@ -69,14 +69,14 @@ jobs:
         run: |
           echo "🔄 Anonymizing log file..."
           pii-detector anonymize logstest/application-direct-log.txt --output_file logstest/application-direct-log.txt
-          echo "✅ Log file anonymized."
+          echo "✅ Log file anonymized (overwritten)."
 
       - name: Upload Anonymized Log (After PII Detection)
         if: env.pii_found == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: anonymized-log
-          path: logstest/application-direct-log.txt  # ✅ Uploads the anonymized log
+          path: logstest/application-direct-log.txt  # ✅ Uploads the overwritten file
 
       - name: Generate Summary with Download Link
         if: env.pii_found == 'true'
