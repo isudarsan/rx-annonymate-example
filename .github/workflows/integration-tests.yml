@@ -74,10 +74,13 @@ jobs:
       - name: Delete Existing Artifact Before Uploading
         if: env.pii_found == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Use built-in GitHub token
+          GH_PAT: ${{ secrets.GH_PAT }}  # ✅ Use the Personal Access Token (PAT)
         run: |
           ARTIFACT_NAME="test-logs"
           echo "🔄 Checking for existing artifact: $ARTIFACT_NAME..."
+
+          # Authenticate GitHub CLI using the PAT
+          echo "$GH_PAT" | gh auth login --with-token
 
           # Get Artifact ID
           ARTIFACT_ID=$(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts --jq ".artifacts[] | select(.name==\"$ARTIFACT_NAME\").id")
