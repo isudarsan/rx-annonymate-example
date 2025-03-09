@@ -1,9 +1,7 @@
-name: Run Integration Tests & PII Detection
+name: PII Detection & PR Validation
 
 on:
   pull_request:
-    branches: [ main ]
-  push:
     branches: [ main ]
 
 jobs:
@@ -57,11 +55,12 @@ jobs:
         id: pii_check
         run: |
           if pii-detector detect logstest/application-direct-log.txt; then
-            echo "✅ No PII found in logs."
-            echo "pii_found=false" >> $GITHUB_ENV
-          else
-            echo "⚠️ PII detected in logs!"
+            echo "❌ PII detected in logs! Pull request will be denied."
             echo "pii_found=true" >> $GITHUB_ENV
+            exit 1  # ❌ Fail the workflow, blocking PR merge
+          else
+            echo "✅ No PII found in logs. PR is valid."
+            echo "pii_found=false" >> $GITHUB_ENV
           fi
 
       - name: Anonymize Logs If PII Was Found
