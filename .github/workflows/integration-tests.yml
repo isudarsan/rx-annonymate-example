@@ -27,8 +27,8 @@ jobs:
       - name: Upload Logs (For PII Detection Later)
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs  # 🔹 Artifact name for logs
-          path: logstest/application-direct-log.txt  # 🔹 Path of the log file
+          name: test-logs
+          path: logstest/application-direct-log.txt
 
   pii-detection:
     needs: integration-test
@@ -41,8 +41,8 @@ jobs:
       - name: Download Logs from Previous Job
         uses: actions/download-artifact@v4
         with:
-          name: test-logs  # 🔹 Matches the uploaded artifact name
-          path: logstest/  # 🔹 Extract logs back to `logstest/`
+          name: test-logs
+          path: logstest/
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -70,3 +70,17 @@ jobs:
           echo "🔄 Anonymizing log file..."
           pii-detector anonymize logstest/application-direct-log.txt --output_file logstest/application-direct-log.txt
           echo "✅ Log file anonymized."
+
+      - name: Upload Anonymized Log (After PII Detection)
+        if: env.pii_found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: anonymized-log
+          path: logstest/application-direct-log.txt  # ✅ Uploads the anonymized log
+
+      - name: Generate Summary with Download Link
+        if: env.pii_found == 'true'
+        run: |
+          ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+          echo "### ✅ Download Anonymized Log" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Click here to download the anonymized log file](${ARTIFACT_URL})" >> $GITHUB_STEP_SUMMARY
