@@ -68,6 +68,9 @@ class LoggingService {
 			
 			Files.write(LOG_FILE_PATH, "Welcome to the world of python !\n".getBytes(StandardCharsets.UTF_8),
 					StandardOpenOption.APPEND);
+			
+			Files.write(LOG_FILE_PATH, "No - PII Branch\n".getBytes(StandardCharsets.UTF_8),
+					StandardOpenOption.APPEND);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
